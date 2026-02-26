@@ -1,23 +1,33 @@
-import express from 'express';
-import cors from 'cors';
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 
 dotenv.config();
-
-const app = express();
-
-app.use(cors());
-app.use(express.json());
 
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseKey = process.env.SUPABASE_ANON_KEY || '';
 
 const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
-app.post('/api/sales-rules', async (req, res) => {
+export default async function handler(req: any, res: any) {
+    // Add CORS headers for Vercel
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader(
+        'Access-Control-Allow-Headers',
+        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    );
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
+    if (req.method !== 'POST') {
+        return res.status(405).json({ success: false, error: 'Method not allowed' });
+    }
+
     try {
-        const { followUpCycle, followUpTimes, firstResponseValue, firstResponseUnit } = req.body;
+        const { followUpCycle, followUpTimes, firstResponseValue, firstResponseUnit } = req.body || {};
 
         console.log('Received payload:', req.body);
 
@@ -61,11 +71,9 @@ app.post('/api/sales-rules', async (req, res) => {
             console.warn('Supabase credentials missing. Logic executed but database wasn\'t updated.');
         }
 
-        res.json({ success: true, message: 'Settings saved and data updated.', data: updateData });
+        return res.status(200).json({ success: true, message: 'Settings saved and data updated.', data: updateData });
     } catch (error) {
         console.error('Server error:', error);
-        res.status(500).json({ success: false, error: 'Internal server error' });
+        return res.status(500).json({ success: false, error: 'Internal server error' });
     }
-});
-
-export default app;
+}
