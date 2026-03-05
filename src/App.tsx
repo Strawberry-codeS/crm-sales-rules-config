@@ -145,11 +145,59 @@ export default function App() {
   );
 }
 
+// ========== 配置销售指标考核 Modal Types ==========
+type Indicator = {
+  id: string;
+  name: string;
+  desc: string;
+  category: string;
+  unit: string;
+};
+
+const ALL_INDICATORS: Indicator[] = [
+  { id: 'recruit', name: '招生人数目标', desc: '高频核心班生KPI', category: '招生类', unit: '人' },
+  { id: 'cash', name: '现金目标', desc: '重检头安全红练', category: '业绩类', unit: '万元' },
+  { id: 'refund', name: '退费人数上限', desc: '风控预警指标', category: '常规', unit: '人' },
+  { id: 'classIn', name: '进班人数', desc: '学员正式进班人数', category: '常规', unit: '人' },
+  { id: 'flow', name: '引流产品签约数', desc: '体验课转化业标', category: '引流专项', unit: '单' },
+  { id: 'winter', name: '零暑期课目标', desc: '季节性招生指引', category: '零暑期课专项', unit: '人' },
+  { id: 'referral', name: '口碑转介绍数', desc: '转介绍亮点指标', category: '口碑专项', unit: '单' },
+];
+
+const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+  '招生类': { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200' },
+  '业绩类': { bg: 'bg-purple-50', text: 'text-purple-600', border: 'border-purple-200' },
+  '常规': { bg: 'bg-gray-50', text: 'text-gray-500', border: 'border-gray-200' },
+  '引流专项': { bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-200' },
+  '零暑期课专项': { bg: 'bg-sky-50', text: 'text-sky-600', border: 'border-sky-200' },
+  '口碑专项': { bg: 'bg-violet-50', text: 'text-violet-600', border: 'border-violet-200' },
+};
+
 function MonthlyPlanView() {
   const [showModal, setShowModal] = useState(false);
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState('2026年02月');
   const [pickerYear, setPickerYear] = useState(2026);
+
+  // 配置指标弹窗状态
+  const [configSalesperson, setConfigSalesperson] = useState('全部销售');
+  const [configMonth, setConfigMonth] = useState('2026-02');
+  const [selectedIndicatorIds, setSelectedIndicatorIds] = useState<string[]>(['recruit', 'cash', 'flow', 'winter', 'referral']);
+  const [indicatorValues, setIndicatorValues] = useState<Record<string, string>>({
+    recruit: '45', cash: '120.00', flow: '200', winter: '80', referral: '12'
+  });
+
+  const toggleIndicator = (id: string) => {
+    if (selectedIndicatorIds.includes(id)) {
+      setSelectedIndicatorIds(prev => prev.filter(i => i !== id));
+    } else {
+      setSelectedIndicatorIds(prev => [...prev, id]);
+    }
+  };
+
+  const removeIndicator = (id: string) => {
+    setSelectedIndicatorIds(prev => prev.filter(i => i !== id));
+  };
 
   const months = [
     '01月', '02月', '03月', '04月', '05月', '06月',
@@ -254,133 +302,197 @@ function MonthlyPlanView() {
         </table>
       </div>
 
-      {/* Add Monthly Task Modal */}
+      {/* 配置销售指标考核 Modal */}
       <AnimatePresence>
         {showModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden"
+              initial={{ scale: 0.92, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.92, opacity: 0, y: 20 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden"
             >
-              <div className="p-8">
-                <div className="flex justify-between items-center mb-8">
-                  <h3 className="text-2xl font-bold text-[#333]">新增月份任务</h3>
-                  <button onClick={() => setShowModal(false)} className="text-[#999] hover:text-[#333] transition-colors">
-                    <X size={24} />
-                  </button>
+              {/* Modal Header */}
+              <div className="flex justify-between items-center px-8 py-5 border-b border-[#F0EEF8]">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-[#F0EEFF] rounded-lg flex items-center justify-center">
+                    <Settings size={18} className="text-[#4A3AFF]" />
+                  </div>
+                  <h3 className="text-lg font-bold text-[#222]">配置销售指标考核</h3>
                 </div>
+                <button onClick={() => setShowModal(false)} className="text-[#AAA] hover:text-[#333] transition-colors p-1 rounded-full hover:bg-gray-100">
+                  <X size={20} />
+                </button>
+              </div>
 
-                <div className="grid grid-cols-2 gap-6 mb-8">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-[#999] uppercase tracking-widest">销售姓名</label>
-                    <select className="w-full border border-[#DDD] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#4A3AFF]/20 focus:border-[#4A3AFF] appearance-none bg-white">
-                      <option value="">请选择销售</option>
+              {/* Top Selectors */}
+              <div className="grid grid-cols-2 gap-6 px-8 pt-6 pb-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs text-[#666]">执行销售人员</label>
+                  <div className="relative">
+                    <select
+                      value={configSalesperson}
+                      onChange={e => setConfigSalesperson(e.target.value)}
+                      className="w-full border border-[#DDD] rounded-lg px-4 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#4A3AFF]/20 focus:border-[#4A3AFF] appearance-none"
+                    >
+                      <option value="全部销售">全部销售</option>
                       <option value="张三">张三</option>
                       <option value="李四">李四</option>
                       <option value="王五">王五</option>
                     </select>
+                    <ChevronRight size={14} className="absolute right-3 top-3.5 rotate-90 text-[#999] pointer-events-none" />
                   </div>
-                  <div className="space-y-2 relative">
-                    <label className="text-xs font-bold text-[#999] uppercase tracking-widest">月份</label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        readOnly
-                        value={selectedMonth}
-                        onClick={() => setShowMonthPicker(!showMonthPicker)}
-                        placeholder="2026年02月"
-                        className="w-full border border-[#DDD] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#4A3AFF]/20 focus:border-[#4A3AFF] cursor-pointer"
-                      />
-                      <Clock size={18} className="absolute right-4 top-3.5 text-[#CCC] pointer-events-none" />
-                    </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs text-[#666]">考核目标月份</label>
+                  <input
+                    type="month"
+                    value={configMonth}
+                    onChange={e => setConfigMonth(e.target.value)}
+                    className="w-full border border-[#DDD] rounded-lg px-4 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#4A3AFF]/20 focus:border-[#4A3AFF]"
+                  />
+                </div>
+              </div>
 
-                    {/* Month Picker Dropdown */}
-                    <AnimatePresence>
-                      {showMonthPicker && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 10 }}
-                          className="absolute top-full left-0 right-0 mt-2 bg-white border border-[#EEE] rounded-xl shadow-xl z-50 p-4"
+              {/* Two-panel Body */}
+              <div className="grid grid-cols-[280px_1fr] gap-0 px-8 pb-4" style={{ minHeight: 380 }}>
+                {/* Left: Indicator Library */}
+                <div className="pr-6 border-r border-[#F0EEF8]">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <div className="w-4 h-4 bg-[#F0EEFF] rounded flex items-center justify-center">
+                      <div className="w-2 h-2 bg-[#4A3AFF] rounded-sm" />
+                    </div>
+                    <span className="text-sm font-semibold text-[#333]">待选指标库</span>
+                  </div>
+
+                  {/* Group by category - basic indicators */}
+                  <div className="space-y-1 mb-4">
+                    {ALL_INDICATORS.filter(ind => !['引流专项', '零暑期课专项', '口碑专项'].includes(ind.category)).map(ind => (
+                      <label key={ind.id} className="flex items-start space-x-3 p-2.5 rounded-lg hover:bg-[#F8F7FF] cursor-pointer transition-colors">
+                        <div
+                          onClick={() => toggleIndicator(ind.id)}
+                          className={`mt-0.5 w-4 h-4 rounded border-2 flex-shrink-0 flex items-center justify-center cursor-pointer transition-colors ${selectedIndicatorIds.includes(ind.id)
+                            ? 'bg-[#4A3AFF] border-[#4A3AFF]'
+                            : 'border-[#CCC] bg-white'
+                            }`}
                         >
-                          <div className="flex justify-between items-center mb-4 border-b border-[#F5F5F5] pb-2">
-                            <button onClick={() => setPickerYear(pickerYear - 1)} className="p-1 hover:bg-gray-100 rounded text-[#999]">
-                              <ArrowLeft size={14} />
-                            </button>
-                            <span className="font-bold text-[#333]">{pickerYear}年</span>
-                            <button onClick={() => setPickerYear(pickerYear + 1)} className="p-1 hover:bg-gray-100 rounded text-[#999]">
-                              <ChevronRight size={14} />
-                            </button>
-                          </div>
-                          <div className="grid grid-cols-3 gap-2">
-                            {months.map((m, idx) => {
-                              const monthStr = `${pickerYear}年${m}`;
-                              return (
-                                <button
-                                  key={idx}
-                                  onClick={() => {
-                                    setSelectedMonth(monthStr);
-                                    setShowMonthPicker(false);
-                                  }}
-                                  className={`py-2 text-xs rounded-lg transition-colors ${selectedMonth === monthStr ? 'bg-[#4A3AFF] text-white font-bold' : 'hover:bg-[#F0EEFF] text-[#666]'}`}
-                                >
-                                  {m}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                          {selectedIndicatorIds.includes(ind.id) && <Check size={10} className="text-white" strokeWidth={3} />}
+                        </div>
+                        <div onClick={() => toggleIndicator(ind.id)} className="flex-1">
+                          <p className="text-sm font-medium text-[#333] leading-tight">{ind.name}</p>
+                          <p className="text-xs text-[#AAA] mt-0.5">{ind.desc}</p>
+                        </div>
+                      </label>
+                    ))}
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-[#999] uppercase tracking-widest">招生人头目标</label>
-                    <input
-                      type="number"
-                      placeholder="请输入目标人数"
-                      className="w-full border border-[#DDD] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#4A3AFF]/20 focus:border-[#4A3AFF]"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-[#999] uppercase tracking-widest">现金目标 (万元)</label>
-                    <input
-                      type="number"
-                      placeholder="请输入现金目标"
-                      className="w-full border border-[#DDD] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#4A3AFF]/20 focus:border-[#4A3AFF]"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-[#999] uppercase tracking-widest">退费人数上限</label>
-                    <input
-                      type="number"
-                      placeholder="请输入退费上限"
-                      className="w-full border border-[#DDD] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#4A3AFF]/20 focus:border-[#4A3AFF]"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-[#999] uppercase tracking-widest">进班人数目标</label>
-                    <input
-                      type="number"
-                      placeholder="请输入进班目标"
-                      className="w-full border border-[#DDD] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#4A3AFF]/20 focus:border-[#4A3AFF]"
-                    />
+
+                  {/* Special indicators */}
+                  <div className="mb-2">
+                    <p className="text-xs text-[#AAA] font-medium mb-2 pl-1">专项指标</p>
+                    <div className="space-y-1">
+                      {ALL_INDICATORS.filter(ind => ['引流专项', '零暑期课专项', '口碑专项'].includes(ind.category)).map(ind => {
+                        const colors = CATEGORY_COLORS[ind.category];
+                        return (
+                          <label key={ind.id} className={`flex items-start space-x-3 p-2.5 rounded-lg border cursor-pointer transition-all ${selectedIndicatorIds.includes(ind.id)
+                            ? `${colors.bg} ${colors.border} border`
+                            : 'border-[#EEE] hover:border-[#D3ADFF] hover:bg-[#FAF8FF]'
+                            }`}>
+                            <div
+                              onClick={() => toggleIndicator(ind.id)}
+                              className={`mt-0.5 w-4 h-4 rounded border-2 flex-shrink-0 flex items-center justify-center cursor-pointer transition-colors ${selectedIndicatorIds.includes(ind.id)
+                                ? 'bg-[#4A3AFF] border-[#4A3AFF]'
+                                : 'border-[#CCC] bg-white'
+                                }`}
+                            >
+                              {selectedIndicatorIds.includes(ind.id) && <Check size={10} className="text-white" strokeWidth={3} />}
+                            </div>
+                            <div onClick={() => toggleIndicator(ind.id)} className="flex-1">
+                              <p className={`text-sm font-semibold leading-tight ${selectedIndicatorIds.includes(ind.id) ? colors.text : 'text-[#333]'}`}>{ind.name}</p>
+                              <p className="text-xs text-[#AAA] mt-0.5">{ind.desc}</p>
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex justify-end space-x-4">
+                {/* Right: Configured Indicators Detail */}
+                <div className="pl-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 rounded-full bg-[#4A3AFF]" />
+                      <span className="text-sm font-semibold text-[#333]">已配置指标明细</span>
+                    </div>
+                    <span className="text-xs text-[#AAA]">
+                      已选 <span className="text-[#4A3AFF] font-bold">{selectedIndicatorIds.length}</span> 个指标
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    {selectedIndicatorIds.map(id => {
+                      const ind = ALL_INDICATORS.find(i => i.id === id)!;
+                      const colors = CATEGORY_COLORS[ind.category] || CATEGORY_COLORS['常规'];
+                      return (
+                        <motion.div
+                          key={id}
+                          layout
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          className={`relative rounded-xl border-2 p-4 ${['引流专项', '零暑期课专项', '口碑专项'].includes(ind.category)
+                            ? `${colors.border} bg-white`
+                            : 'border-[#EEE] bg-white'
+                            }`}
+                        >
+                          <button
+                            onClick={() => removeIndicator(id)}
+                            className="absolute top-3 right-3 text-[#CCC] hover:text-[#FF4D4F] transition-colors"
+                          >
+                            <X size={16} />
+                          </button>
+                          <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded mb-2 ${colors.bg} ${colors.text}`}>
+                            {ind.category}
+                          </span>
+                          <p className="text-sm font-bold text-[#222] mb-3">{ind.name}</p>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              value={indicatorValues[id] || ''}
+                              onChange={e => setIndicatorValues(prev => ({ ...prev, [id]: e.target.value }))}
+                              placeholder="请输入目标值"
+                              className="w-full border border-[#E8E8E8] rounded-lg px-3 py-2 pr-12 text-sm bg-[#FAFAFA] focus:outline-none focus:ring-2 focus:ring-[#4A3AFF]/20 focus:border-[#4A3AFF]"
+                            />
+                            <span className="absolute right-3 top-2 text-xs text-[#AAA]">{ind.unit}</span>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-between px-8 py-4 border-t border-[#F0EEF8] bg-[#FDFCFF]">
+                <div className="flex items-center space-x-2 text-xs text-[#AAA]">
+                  <CheckCircle2 size={14} className="text-[#4A3AFF]" />
+                  <span>确认后指标将同步至被选销售人员的个人中心</span>
+                </div>
+                <div className="flex space-x-3">
                   <button
                     onClick={() => setShowModal(false)}
-                    className="px-8 py-3 rounded-lg border border-[#DDD] text-[#666] font-medium hover:bg-gray-50 transition-colors"
+                    className="px-6 py-2.5 rounded-lg border border-[#DDD] text-[#666] text-sm font-medium hover:bg-gray-50 transition-colors"
                   >
                     取消
                   </button>
                   <button
                     onClick={() => setShowModal(false)}
-                    className="px-8 py-3 rounded-lg bg-[#52C41A] text-white font-medium hover:bg-[#73D13D] transition-colors shadow-lg shadow-[#52C41A]/20"
+                    className="px-6 py-2.5 rounded-lg bg-[#4A3AFF] text-white text-sm font-medium hover:bg-[#3D2EDD] transition-colors shadow-lg shadow-[#4A3AFF]/25 flex items-center space-x-2"
                   >
-                    确认新增
+                    <CheckCircle2 size={14} />
+                    <span>确认并保存</span>
                   </button>
                 </div>
               </div>
