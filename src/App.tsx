@@ -23,7 +23,9 @@ import {
   Edit3,
   CheckCircle2,
   Check,
-  X
+  X,
+  Star,
+  Save
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -46,6 +48,7 @@ export default function App() {
     { id: 'monthly', label: '销售月计划设置' },
     { id: 'process', label: '销售流程规范' },
     { id: 'aging', label: '销售时效设置' },
+    { id: 'tags', label: '重点单初步标记设置' },
   ];
 
   return (
@@ -136,6 +139,7 @@ export default function App() {
                 {activeTab === 'monthly' && <MonthlyPlanView key="monthly" />}
                 {activeTab === 'process' && <ProcessView key="process" />}
                 {activeTab === 'aging' && <AgingView key="aging" />}
+                {activeTab === 'tags' && <TagsView key="tags" />}
               </AnimatePresence>
             </div>
           </div>
@@ -1343,6 +1347,129 @@ function AgingView() {
           </motion.div>
         </div>
       )}
+    </motion.div>
+  );
+}
+
+function TagsView() {
+  const [conditions, setConditions] = useState([
+    { id: 1, field: '小区房价', operator: '大于', value: '80000', placeholder: '', unit: '元/m²', logic: null },
+    { id: 2, field: '在读学员占比', operator: '大于等于', value: '', placeholder: '输入比例', unit: '%', logic: '且' },
+    { id: 3, field: '目标学校名称', operator: '包含', value: [{ text: '一流一类小学', color: 'blue' }, { text: '人大附小', color: 'blue' }], isTags: true, placeholder: '搜索学校', unit: '', logic: '且' },
+    { id: 4, field: '学校距离', operator: '小于等于', value: '', placeholder: '输入距离', unit: 'km', logic: '或' },
+    { id: 5, field: '线索来源', operator: '属于以下', value: [{ text: '口碑(转介绍)', color: 'purple' }, { text: '美大(美团点评)', color: 'pink' }], isTags: true, placeholder: '搜索渠道', unit: '', logic: '且' }
+  ]);
+
+  const tagColors: Record<string, string> = {
+    blue: 'bg-[#F0F5FF] text-[#2F54EB] border-[#ADC6FF]',
+    purple: 'bg-[#F9F0FF] text-[#722ED1] border-[#D3ADFF]',
+    pink: 'bg-[#FFF0F6] text-[#EB2F96] border-[#FFADD2]'
+  };
+
+  const removeCondition = (id: number) => {
+    setConditions(conditions.filter(c => c.id !== id));
+  };
+
+  const toggleLogic = (id: number) => {
+    setConditions(conditions.map(c =>
+      c.id === id ? { ...c, logic: c.logic === '且' ? '或' : '且' } : c
+    ));
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      className="space-y-8"
+    >
+      <div className="flex justify-between items-start">
+        <div className="space-y-3">
+          <div className="flex items-center space-x-3">
+            <div className="w-6 h-6 rounded-full bg-[#594AF1] text-white flex items-center justify-center">
+              <Star size={14} fill="currentColor" />
+            </div>
+            <h3 className="text-lg font-bold text-[#333]">重点单标准配置</h3>
+            <span className="text-sm text-[#999]">通过灵活的组合条件筛选高价值线索</span>
+          </div>
+          <p className="text-xs text-[#AAA]">
+            初步标记仅限未跟进前，跟进后将会自动根据客户产生主动或被动高意向行为进行AI自动标记
+          </p>
+        </div>
+        <button className="bg-[#5C4DDF] text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-[#483BB5] transition-colors flex items-center space-x-2 shadow-sm">
+          <Save size={16} />
+          <span>保存配置</span>
+        </button>
+      </div>
+
+      <div className="relative pt-4 pl-14 pr-4 max-w-5xl">
+        {/* left vertical line */}
+        <div className="absolute left-[27px] top-[36px] bottom-[30px] w-[1.5px] bg-[#6657DE]" />
+
+        <div className="space-y-4">
+          {conditions.map((item) => (
+            <div key={item.id} className="relative z-10">
+              {/* logic node button */}
+              {item.logic && (
+                <div
+                  onClick={() => toggleLogic(item.id)}
+                  className="absolute -left-[40.5px] top-1/2 -translate-y-1/2 w-[22px] h-[22px] bg-white border-[1.5px] border-[#6657DE] rounded flex items-center justify-center text-[10px] text-[#6657DE] font-medium z-20 cursor-pointer hover:bg-[#F0EEFF] transition-colors select-none"
+                >
+                  {item.logic}
+                </div>
+              )}
+
+              <div className="bg-white border border-[#EEE] rounded-lg p-2.5 flex items-center space-x-4 shadow-sm hover:border-[#D3ADFF] transition-colors">
+                <div className="w-[160px] relative">
+                  <select className="w-full border border-[#DDD] rounded text-sm px-3 py-2 appearance-none bg-white focus:outline-none focus:border-[#594AF1] cursor-pointer hover:bg-gray-50 transition-colors text-[#333]">
+                    <option>{item.field}</option>
+                  </select>
+                  <ChevronRight size={14} className="absolute right-3 top-2.5 rotate-90 text-[#999] pointer-events-none" />
+                </div>
+
+                <div className="w-[140px] relative">
+                  <select className="w-full border border-[#DDD] rounded text-sm px-3 py-2 appearance-none bg-white focus:outline-none focus:border-[#594AF1] cursor-pointer hover:bg-gray-50 transition-colors text-[#333]">
+                    <option>{item.operator}</option>
+                  </select>
+                  <ChevronRight size={14} className="absolute right-3 top-2.5 rotate-90 text-[#999] pointer-events-none" />
+                </div>
+
+                <div className="flex-1 flex items-center space-x-2">
+                  <div className="flex-1 border border-[#DDD] rounded px-3 py-1.5 flex flex-wrap items-center gap-2 min-h-[38px] bg-white">
+                    {item.isTags ? (
+                      <>
+                        {(item.value as { text: string, color: string }[]).map((tag, i) => (
+                          <div key={i} className={`border text-xs px-2.5 py-1 flex items-center space-x-1 ${tagColors[tag.color] || tagColors.blue}`} style={{ borderRadius: '4px' }}>
+                            <span>{tag.text}</span>
+                            <X size={12} className="cursor-pointer opacity-70 hover:opacity-100" />
+                          </div>
+                        ))}
+                        <input type="text" placeholder={item.placeholder} className="flex-1 outline-none text-sm min-w-[80px] text-[#333] placeholder:text-[#BBB]" />
+                      </>
+                    ) : (
+                      <input
+                        type="text"
+                        defaultValue={item.value as string}
+                        placeholder={item.placeholder}
+                        className="w-full outline-none text-sm text-[#333] placeholder:text-[#BBB]"
+                      />
+                    )}
+                  </div>
+                  {item.unit ? (
+                    <span className="text-sm text-[#666] w-8 text-center">{item.unit}</span>
+                  ) : (
+                    <span className="w-8" />
+                  )}
+                </div>
+
+                <button onClick={() => removeCondition(item.id)} className="text-[#CCC] hover:text-[#FF4D4F] p-1 flex-shrink-0 transition-colors">
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </motion.div>
   );
 }
