@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-type TabType = 'monthly' | 'process' | 'aging' | 'tags';
+type TabType = 'monthly' | 'process' | 'aging';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('monthly');
@@ -48,7 +48,6 @@ export default function App() {
     { id: 'monthly', label: '销售月计划设置' },
     { id: 'process', label: '销售流程规范' },
     { id: 'aging', label: '销售时效设置' },
-    { id: 'tags', label: '重点单初步标记设置' },
   ];
 
   return (
@@ -139,7 +138,6 @@ export default function App() {
                 {activeTab === 'monthly' && <MonthlyPlanView key="monthly" />}
                 {activeTab === 'process' && <ProcessView key="process" />}
                 {activeTab === 'aging' && <AgingView key="aging" />}
-                {activeTab === 'tags' && <TagsView key="tags" />}
               </AnimatePresence>
             </div>
           </div>
