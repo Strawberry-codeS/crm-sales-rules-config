@@ -735,6 +735,9 @@ function AgingView() {
   const [firstResponseValue, setFirstResponseValue] = useState(30);
   const [firstResponseUnit, setFirstResponseUnit] = useState('分钟内');
   const [isSaving, setIsSaving] = useState(false);
+  const [timePeriods, setTimePeriods] = useState([
+    { id: 1, days: '周三～周五', startTime: '2:24 PM', endTime: '2:24 PM' }
+  ]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -1190,6 +1193,91 @@ function AgingView() {
                           </motion.div>
                         ))}
                       </div>
+                    </div>
+
+                    {/* Applicable Time Periods */}
+                    <div className="space-y-4 pt-4 border-t border-[#EEE]">
+                      <h5 className="text-sm font-bold text-[#333]">适用时段</h5>
+                      <div className="border border-[#DDD] rounded overflow-hidden bg-white">
+                        <table className="w-full text-sm text-center">
+                          <thead className="bg-white text-[#333] border-b border-[#DDD]">
+                            <tr>
+                              <th className="py-2.5 px-4 font-normal border-r border-[#DDD] w-1/3">星期</th>
+                              <th className="py-2.5 px-4 font-normal border-r border-[#DDD]">时间段</th>
+                              <th className="py-2.5 px-4 font-normal w-24">操作</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-[#DDD]">
+                            {timePeriods.map((tp) => (
+                              <tr key={tp.id}>
+                                <td className="p-2.5 border-r border-[#DDD]">
+                                  <div className="relative inline-block w-4/5">
+                                    <select 
+                                      className="w-full border border-[#999] rounded px-3 py-1.5 focus:outline-none text-sm appearance-none bg-white cursor-pointer"
+                                      value={tp.days}
+                                      onChange={(e) => {
+                                        setTimePeriods(timePeriods.map(t => t.id === tp.id ? { ...t, days: e.target.value } : t));
+                                      }}
+                                    >
+                                      <option>周一～周五</option>
+                                      <option>周三～周五</option>
+                                      <option>周六～周日</option>
+                                      <option>周一～周日</option>
+                                    </select>
+                                    <ChevronRight size={16} className="absolute right-2 top-2 rotate-90 text-[#333] pointer-events-none" />
+                                  </div>
+                                </td>
+                                <td className="p-2.5 border-r border-[#DDD]">
+                                  <div className="flex items-center justify-center space-x-4">
+                                    <div className="relative">
+                                      <input 
+                                        type="text" 
+                                        value={tp.startTime}
+                                        onChange={(e) => {
+                                          setTimePeriods(timePeriods.map(t => t.id === tp.id ? { ...t, startTime: e.target.value } : t));
+                                        }}
+                                        className="w-[100px] border-b border-[#999] focus:border-[#4A3AFF] px-1 py-1 focus:outline-none text-center text-sm"
+                                      />
+                                      <Clock size={16} className="absolute right-0 top-1 text-[#666] pointer-events-none" />
+                                    </div>
+                                    <span className="text-[#666]">~</span>
+                                    <div className="relative">
+                                      <input 
+                                        type="text" 
+                                        value={tp.endTime}
+                                        onChange={(e) => {
+                                          setTimePeriods(timePeriods.map(t => t.id === tp.id ? { ...t, endTime: e.target.value } : t));
+                                        }}
+                                        className="w-[100px] border-b border-[#999] focus:border-[#4A3AFF] px-1 py-1 focus:outline-none text-center text-sm"
+                                      />
+                                      <Clock size={16} className="absolute right-0 top-1 text-[#666] pointer-events-none" />
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="p-2.5">
+                                  <button 
+                                    onClick={() => setTimePeriods(timePeriods.filter(t => t.id !== tp.id))}
+                                    className="text-[#FFB08F] hover:text-[#FF4D4F] transition-colors p-1"
+                                  >
+                                    <Trash2 size={18} />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          setTimePeriods([...timePeriods, { id: Date.now(), days: '周一～周五', startTime: '09:00 AM', endTime: '06:00 PM' }]);
+                        }}
+                        className="text-[#722ED1] text-sm flex items-center space-x-1.5 hover:text-[#5B25A6] font-medium transition-colors"
+                      >
+                        <div className="border border-[#722ED1] rounded-sm bg-white w-[14px] h-[14px] flex items-center justify-center">
+                          <Plus size={10} strokeWidth={3} />
+                        </div>
+                        <span>添加适用时段</span>
+                      </button>
                     </div>
                   </div>
 
