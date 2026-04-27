@@ -741,6 +741,7 @@ function AgingView() {
   ]);
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
   const [showAudienceModal, setShowAudienceModal] = useState(false);
+  const [showFollowUpModal, setShowFollowUpModal] = useState(false);
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
 
   useEffect(() => {
@@ -930,6 +931,16 @@ function AgingView() {
                         <span>自定义客群</span>
                         <button 
                           onClick={() => setShowAudienceModal(true)}
+                          className="text-[#1890FF] hover:text-[#40A9FF] transition-colors p-1 flex items-center justify-center rounded-full hover:bg-[#E6F7FF]"
+                        >
+                          <Eye size={16} />
+                        </button>
+                      </div>
+                    ) : label === '跟进次数' ? (
+                      <div className="flex items-center text-[#666] space-x-2">
+                        <span>{value}</span>
+                        <button 
+                          onClick={() => setShowFollowUpModal(true)}
                           className="text-[#1890FF] hover:text-[#40A9FF] transition-colors p-1 flex items-center justify-center rounded-full hover:bg-[#E6F7FF]"
                         >
                           <Eye size={16} />
@@ -1583,6 +1594,79 @@ function AgingView() {
               <div className="bg-gray-50 px-6 py-4 flex justify-end border-t border-[#EEE]">
                 <button 
                   onClick={() => setShowAudienceModal(false)}
+                  className="px-6 py-2 bg-[#4A3AFF] text-white rounded-lg text-sm font-medium hover:bg-[#3D2EDD] transition-colors shadow-sm"
+                >
+                  我知道了
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Follow Up Details Modal */}
+      <AnimatePresence>
+        {showFollowUpModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
+            >
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <div className="flex items-center space-x-2">
+                    <div className="p-1.5 bg-[#E6F7FF] text-[#1890FF] rounded-lg">
+                      <Clock size={16} />
+                    </div>
+                    <h3 className="text-lg font-bold text-[#333]">跟进时效与时段规则</h3>
+                  </div>
+                  <button onClick={() => setShowFollowUpModal(false)} className="text-[#999] hover:text-[#333]">
+                    <X size={20} />
+                  </button>
+                </div>
+                
+                <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                  {/* Follow-up Limits */}
+                  <div className="bg-[#F9FAFB] rounded-xl p-5 border border-[#EEE]">
+                    <h5 className="text-xs font-bold text-[#999] uppercase tracking-widest mb-4">跟进时限配置</h5>
+                    <div className="grid grid-cols-2 gap-4">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="bg-white p-3 rounded-lg border border-[#DDD] flex items-center justify-between shadow-sm">
+                          <span className="text-xs font-bold text-[#666]">{getOrdinal(i + 1)}跟进时限</span>
+                          <span className="text-sm font-bold text-[#1890FF]">
+                            {i === 0 ? '30 分钟内' : '24 小时内'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Time Periods */}
+                  <div className="bg-[#F9FAFB] rounded-xl p-5 border border-[#EEE]">
+                    <h5 className="text-xs font-bold text-[#999] uppercase tracking-widest mb-4">适用时段</h5>
+                    <div className="space-y-3">
+                      {timePeriods.map((tp) => (
+                        <div key={tp.id} className="bg-white p-3 rounded-lg border border-[#DDD] flex items-center justify-between shadow-sm">
+                          <div className="flex items-center space-x-3">
+                            <span className="text-xs font-bold text-[#666] px-2 py-1 bg-gray-50 rounded border border-[#EEE]">
+                              {tp.days.join('、')}
+                            </span>
+                          </div>
+                          <div className="flex items-center text-sm font-medium text-[#333] space-x-2">
+                            <Clock size={14} className="text-[#999]" />
+                            <span>{tp.startTime} - {tp.endTime}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-6 py-4 flex justify-end border-t border-[#EEE]">
+                <button 
+                  onClick={() => setShowFollowUpModal(false)}
                   className="px-6 py-2 bg-[#4A3AFF] text-white rounded-lg text-sm font-medium hover:bg-[#3D2EDD] transition-colors shadow-sm"
                 >
                   我知道了
