@@ -189,6 +189,7 @@ function MonthlyPlanView() {
   const [indicatorValues, setIndicatorValues] = useState<Record<string, string>>({
     recruit: '45', cash: '120.00', flow: '200', winter: '80', referral: '12'
   });
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const toggleIndicator = (id: string) => {
     if (selectedIndicatorIds.includes(id)) {
@@ -301,9 +302,20 @@ function MonthlyPlanView() {
                 <td className="px-6 py-4">{row.winter}</td>
                 <td className="px-6 py-4">{row.referral}</td>
                 <td className="px-6 py-4">
-                  <button className="bg-[#722ED1] text-white px-4 py-1 rounded text-xs hover:bg-[#9254DE] transition-colors">
-                    调整
-                  </button>
+                  <div className="flex items-center space-x-3">
+                    <button 
+                      onClick={() => setShowModal(true)}
+                      className="text-[#1890FF] text-sm font-medium hover:text-[#40A9FF] transition-colors"
+                    >
+                      编辑
+                    </button>
+                    <button 
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="text-[#FF4D4F] text-sm font-medium hover:text-[#FF7875] transition-colors"
+                    >
+                      删除
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -502,6 +514,42 @@ function MonthlyPlanView() {
                   >
                     <CheckCircle2 size={14} />
                     <span>确认并保存</span>
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[70] p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden"
+            >
+              <div className="p-6 text-center">
+                <div className="w-12 h-12 rounded-full bg-[#FFF1F0] flex items-center justify-center mx-auto mb-4">
+                  <Trash2 size={24} className="text-[#FF4D4F]" />
+                </div>
+                <h3 className="text-lg font-bold text-[#333] mb-2">是否删除</h3>
+                <p className="text-sm text-[#666] mb-6">删除后该销售目标将清除</p>
+                <div className="flex justify-center space-x-3">
+                  <button 
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="px-6 py-2 rounded-lg border border-[#DDD] text-[#666] font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    取消
+                  </button>
+                  <button 
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="px-6 py-2 rounded-lg bg-[#FF4D4F] text-white font-medium hover:bg-[#FF7875] transition-colors shadow-sm"
+                  >
+                    确认删除
                   </button>
                 </div>
               </div>
