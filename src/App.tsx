@@ -741,6 +741,7 @@ function AgingView() {
   ]);
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
   const [showAudienceModal, setShowAudienceModal] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
 
   useEffect(() => {
     const handleClickOutside = () => setOpenDropdownId(null);
@@ -842,6 +843,7 @@ function AgingView() {
         </div>
         <button
           onClick={() => {
+            setModalMode('create');
             setModalStep(1);
             setShowModal(true);
           }}
@@ -887,7 +889,13 @@ function AgingView() {
                 <input type="checkbox" checked readOnly className="w-4 h-4 text-[#1890FF] rounded border-gray-300 focus:ring-[#1890FF]" />
                 <span className="text-sm text-[#666]">已启用</span>
               </label>
-              <button className="text-[#666] hover:text-[#333] text-sm flex items-center space-x-1">
+              <button 
+                onClick={() => {
+                  setModalMode('edit');
+                  setShowModal(true);
+                }}
+                className="text-[#666] hover:text-[#333] text-sm flex items-center space-x-1"
+              >
                 <Edit3 size={14} />
                 <span>编辑</span>
               </button>
@@ -949,16 +957,23 @@ function AgingView() {
             <div className="p-8">
               <div className="flex justify-between items-center mb-8">
                 <h3 className="text-2xl font-bold text-[#333]">
-                  {modalStep === 1 ? '创建新的规则' : '配置规则详情'}
+                  {modalMode === 'edit' ? '编辑规则' : (modalStep === 1 ? '创建新的规则' : '配置规则详情')}
                 </h3>
                 <button onClick={() => setShowModal(false)} className="text-[#999] hover:text-[#333]">
                   <X size={24} />
                 </button>
               </div>
 
-              {modalStep === 1 ? (
-                <div className="space-y-8">
-                  <div className="flex items-center">
+              <div className="space-y-8 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
+                {(modalMode === 'edit' || modalStep === 1) && (
+                  <div className={modalMode === 'edit' ? "bg-[#F9FAFB] rounded-2xl p-6 border border-[#EEE] space-y-6" : "space-y-8"}>
+                    {modalMode === 'edit' && (
+                      <h4 className="font-bold text-[#333] flex items-center space-x-2 mb-6">
+                        <div className="w-1 h-4 bg-[#722ED1] rounded-full"></div>
+                        <span>基本信息</span>
+                      </h4>
+                    )}
+                    <div className="flex items-center">
                     <label className="w-24 text-sm font-medium text-[#666]">记录类型</label>
                     <div className="flex-1 relative">
                       <select className="w-full border border-[#DDD] rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A3AFF]/20 focus:border-[#4A3AFF] appearance-none">
@@ -985,24 +1000,34 @@ function AgingView() {
                     />
                   </div>
 
-                  <div className="flex justify-end space-x-4 pt-4">
-                    <button
-                      onClick={() => setShowModal(false)}
-                      className="px-8 py-3 rounded-lg border border-[#DDD] text-[#666] font-medium hover:bg-gray-50 transition-colors"
-                    >
-                      取消
-                    </button>
-                    <button
-                      onClick={() => setModalStep(2)}
-                      className="px-8 py-3 rounded-lg bg-[#4A3AFF] text-white font-medium hover:bg-[#3D2EDD] transition-colors"
-                    >
-                      下一步
-                    </button>
-                  </div>
+                  {modalMode === 'create' && (
+                    <div className="flex justify-end space-x-4 pt-4">
+                      <button
+                        onClick={() => setShowModal(false)}
+                        className="px-8 py-3 rounded-lg border border-[#DDD] text-[#666] font-medium hover:bg-gray-50 transition-colors"
+                      >
+                        取消
+                      </button>
+                      <button
+                        onClick={() => setModalStep(2)}
+                        className="px-8 py-3 rounded-lg bg-[#4A3AFF] text-white font-medium hover:bg-[#3D2EDD] transition-colors"
+                      >
+                        下一步
+                      </button>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="space-y-8 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
-                  {/* Scope Selection */}
+                )}
+
+                {(modalMode === 'edit' || modalStep === 2) && (
+                  <div className={modalMode === 'edit' ? "bg-[#F9FAFB] rounded-2xl p-6 border border-[#EEE] space-y-8" : "space-y-8"}>
+                    {modalMode === 'edit' && (
+                      <h4 className="font-bold text-[#333] flex items-center space-x-2 mb-6">
+                        <div className="w-1 h-4 bg-[#722ED1] rounded-full"></div>
+                        <span>规则配置</span>
+                      </h4>
+                    )}
+                    {/* Scope Selection */}
                   <div className="grid grid-cols-2 gap-6">
                     <div className="flex items-center space-x-4">
                       <label className="text-sm font-medium text-[#666] w-20">适用分公司</label>
@@ -1473,23 +1498,33 @@ function AgingView() {
                     </div>
                   </div>
 
-                  <div className="flex justify-end space-x-4 pt-4">
-                    <button
-                      onClick={() => setModalStep(1)}
-                      className="px-8 py-3 rounded-lg border border-[#DDD] text-[#666] font-medium hover:bg-gray-50 transition-colors"
-                    >
-                      上一步
-                    </button>
-                    <button
-                      onClick={handleSave}
-                      disabled={isSaving}
-                      className="px-8 py-3 rounded-lg bg-[#4A3AFF] text-white font-medium hover:bg-[#3D2EDD] transition-colors shadow-lg shadow-[#4A3AFF]/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isSaving ? '保存中...' : '保存设置'}
-                    </button>
+                    <div className="flex justify-end space-x-4 pt-4">
+                      {modalMode === 'create' ? (
+                        <button
+                          onClick={() => setModalStep(1)}
+                          className="px-8 py-3 rounded-lg border border-[#DDD] text-[#666] font-medium hover:bg-gray-50 transition-colors"
+                        >
+                          上一步
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setShowModal(false)}
+                          className="px-8 py-3 rounded-lg border border-[#DDD] text-[#666] font-medium hover:bg-gray-50 transition-colors"
+                        >
+                          取消
+                        </button>
+                      )}
+                      <button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="px-8 py-3 rounded-lg bg-[#4A3AFF] text-white font-medium hover:bg-[#3D2EDD] transition-colors shadow-lg shadow-[#4A3AFF]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isSaving ? '保存中...' : '保存设置'}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </motion.div>
         </div>
