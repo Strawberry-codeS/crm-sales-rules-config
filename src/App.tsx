@@ -263,10 +263,6 @@ function MonthlyPlanView() {
           <Plus size={16} />
           <span>新增月份任务</span>
         </button>
-        <button className="bg-[#1890FF] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-[#40A9FF] transition-colors flex items-center space-x-2">
-          <Download size={16} />
-          <span>导入数据</span>
-        </button>
       </div>
 
       {/* Table */}
