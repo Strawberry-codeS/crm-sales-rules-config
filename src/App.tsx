@@ -279,13 +279,16 @@ function MonthlyPlanView() {
               <th className="px-6 py-4">现金(万)</th>
               <th className="px-6 py-4">退费人数</th>
               <th className="px-6 py-4">进班人数</th>
+              <th className="px-6 py-4">引流产品签约数</th>
+              <th className="px-6 py-4">寒暑期课目标</th>
+              <th className="px-6 py-4">口碑转介绍数</th>
               <th className="px-6 py-4">操作</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#EEE]">
             {[
-              { name: '张三', month: '2026年2月', target: 5, cash: 4, refund: 0, class: 3 },
-              { name: '李四', month: '2026年2月', target: 5, cash: 4, refund: 0, class: 3 },
+              { name: '张三', month: '2026年2月', target: 5, cash: 4, refund: 0, class: 3, flow: 200, winter: 80, referral: 12 },
+              { name: '李四', month: '2026年2月', target: 5, cash: 4, refund: 0, class: 3, flow: 200, winter: 80, referral: 12 },
             ].map((row, i) => (
               <tr key={i} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4">{row.name}</td>
@@ -294,6 +297,9 @@ function MonthlyPlanView() {
                 <td className="px-6 py-4">{row.cash}</td>
                 <td className="px-6 py-4">{row.refund}</td>
                 <td className="px-6 py-4">{row.class}</td>
+                <td className="px-6 py-4">{row.flow}</td>
+                <td className="px-6 py-4">{row.winter}</td>
+                <td className="px-6 py-4">{row.referral}</td>
                 <td className="px-6 py-4">
                   <button className="bg-[#722ED1] text-white px-4 py-1 rounded text-xs hover:bg-[#9254DE] transition-colors">
                     调整
