@@ -25,7 +25,8 @@ import {
   Check,
   X,
   Star,
-  Save
+  Save,
+  Eye
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -735,9 +736,19 @@ function AgingView() {
   const [firstResponseValue, setFirstResponseValue] = useState(30);
   const [firstResponseUnit, setFirstResponseUnit] = useState('分钟内');
   const [isSaving, setIsSaving] = useState(false);
-  const [timePeriods, setTimePeriods] = useState([
-    { id: 1, days: '周三～周五', startTime: '2:24 PM', endTime: '2:24 PM' }
+  const [timePeriods, setTimePeriods] = useState<{ id: number, days: string[], startTime: string, endTime: string }[]>([
+    { id: 1, days: ['周三', '周四', '周五'], startTime: '2:24 PM', endTime: '2:24 PM' }
   ]);
+  const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
+  const [showAudienceModal, setShowAudienceModal] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = () => setOpenDropdownId(null);
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
+  const ALL_DAYS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -852,7 +863,8 @@ function AgingView() {
               '适用校区：北京广渠门校区、北京西直门校区',
               '适用渠道：全部',
               '跟进周期：3天',
-              '跟进次数：1次'
+              '跟进次数：1次',
+              '适用客群：'
             ]
           },
           {
@@ -864,7 +876,8 @@ function AgingView() {
               '适用校区：全部',
               '适用渠道：线上营销',
               '跟进周期：1天',
-              '跟进次数：3次'
+              '跟进次数：3次',
+              '适用客群：'
             ]
           }
         ].map((rule, i) => (
@@ -897,12 +910,29 @@ function AgingView() {
             <p className="text-sm text-[#999] mb-4">{rule.desc}</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-8">
-              {rule.details.map((detail, j) => (
-                <div key={j} className="flex items-center text-sm text-[#333]">
-                  <span className="font-medium min-w-[80px]">{detail.split('：')[0]}：</span>
-                  <span className="text-[#666]">{detail.split('：')[1]}</span>
-                </div>
-              ))}
+              {rule.details.map((detail, j) => {
+                const [label, ...rest] = detail.split('：');
+                const value = rest.join('：');
+                
+                return (
+                  <div key={j} className="flex items-center text-sm text-[#333]">
+                    <span className="font-medium min-w-[80px]">{label}：</span>
+                    {label === '适用客群' ? (
+                      <div className="flex items-center text-[#666] space-x-2">
+                        <span>自定义客群</span>
+                        <button 
+                          onClick={() => setShowAudienceModal(true)}
+                          className="text-[#1890FF] hover:text-[#40A9FF] transition-colors p-1 flex items-center justify-center rounded-full hover:bg-[#E6F7FF]"
+                        >
+                          <Eye size={16} />
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-[#666]">{value}</span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         ))}
@@ -1211,20 +1241,51 @@ function AgingView() {
                             {timePeriods.map((tp) => (
                               <tr key={tp.id}>
                                 <td className="p-2.5 border-r border-[#DDD]">
-                                  <div className="relative inline-block w-4/5">
-                                    <select 
-                                      className="w-full border border-[#999] rounded px-3 py-1.5 focus:outline-none text-sm appearance-none bg-white cursor-pointer"
-                                      value={tp.days}
-                                      onChange={(e) => {
-                                        setTimePeriods(timePeriods.map(t => t.id === tp.id ? { ...t, days: e.target.value } : t));
+                                  <div className="relative inline-block w-4/5 text-left">
+                                    <div 
+                                      className="w-full border border-[#999] rounded px-3 py-1.5 focus:outline-none text-sm bg-white cursor-pointer flex justify-between items-center min-h-[34px]"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenDropdownId(openDropdownId === tp.id ? null : tp.id);
                                       }}
                                     >
-                                      <option>周一～周五</option>
-                                      <option>周三～周五</option>
-                                      <option>周六～周日</option>
-                                      <option>周一～周日</option>
-                                    </select>
-                                    <ChevronRight size={16} className="absolute right-2 top-2 rotate-90 text-[#333] pointer-events-none" />
+                                      <span className="truncate pr-4">
+                                        {tp.days.length === 0 ? '请选择' : tp.days.join('、')}
+                                      </span>
+                                      <ChevronRight size={16} className={`text-[#333] pointer-events-none transition-transform ${openDropdownId === tp.id ? '-rotate-90' : 'rotate-90'}`} />
+                                    </div>
+                                    
+                                    <AnimatePresence>
+                                      {openDropdownId === tp.id && (
+                                        <motion.div 
+                                          initial={{ opacity: 0, y: -10 }}
+                                          animate={{ opacity: 1, y: 0 }}
+                                          exit={{ opacity: 0, y: -10 }}
+                                          className="absolute top-full left-0 mt-1 w-full bg-white border border-[#DDD] rounded shadow-lg z-50 py-1"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          {ALL_DAYS.map(day => (
+                                            <label key={day} className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                                              <input 
+                                                type="checkbox" 
+                                                checked={tp.days.includes(day)}
+                                                onChange={(e) => {
+                                                  const newDays = e.target.checked 
+                                                    ? [...tp.days, day] 
+                                                    : tp.days.filter(d => d !== day);
+                                                  
+                                                  newDays.sort((a, b) => ALL_DAYS.indexOf(a) - ALL_DAYS.indexOf(b));
+                                                  
+                                                  setTimePeriods(timePeriods.map(t => t.id === tp.id ? { ...t, days: newDays } : t));
+                                                }}
+                                                className="mr-2 rounded border-gray-300 text-[#4A3AFF] focus:ring-[#4A3AFF] cursor-pointer"
+                                              />
+                                              <span className="text-sm text-[#333]">{day}</span>
+                                            </label>
+                                          ))}
+                                        </motion.div>
+                                      )}
+                                    </AnimatePresence>
                                   </div>
                                 </td>
                                 <td className="p-2.5 border-r border-[#DDD]">
@@ -1269,7 +1330,7 @@ function AgingView() {
                       </div>
                       <button 
                         onClick={() => {
-                          setTimePeriods([...timePeriods, { id: Date.now(), days: '周一～周五', startTime: '09:00 AM', endTime: '06:00 PM' }]);
+                          setTimePeriods([...timePeriods, { id: Date.now(), days: ['周一', '周二', '周三', '周四', '周五'], startTime: '09:00 AM', endTime: '06:00 PM' }]);
                         }}
                         className="text-[#722ED1] text-sm flex items-center space-x-1.5 hover:text-[#5B25A6] font-medium transition-colors"
                       >
@@ -1433,6 +1494,69 @@ function AgingView() {
           </motion.div>
         </div>
       )}
+
+      {/* Audience Details Modal */}
+      <AnimatePresence>
+        {showAudienceModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
+            >
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <div className="flex items-center space-x-2">
+                    <div className="p-1.5 bg-[#F0EEFF] text-[#722ED1] rounded-lg">
+                      <Tag size={16} />
+                    </div>
+                    <h3 className="text-lg font-bold text-[#333]">适用客群规则</h3>
+                  </div>
+                  <button onClick={() => setShowAudienceModal(false)} className="text-[#999] hover:text-[#333]">
+                    <X size={20} />
+                  </button>
+                </div>
+                
+                <div className="bg-[#F9FAFB] rounded-xl p-5 border border-[#EEE]">
+                  <div className="space-y-4 relative pl-8">
+                    {filters.length > 1 && (
+                      <div className="absolute left-[11px] top-4 bottom-4 w-[1px] bg-[#D3ADFF]"></div>
+                    )}
+                    {filters.map((filter, index) => (
+                      <div key={filter.id} className="relative flex items-center space-x-3">
+                        {index > 0 && (
+                          <div className="absolute -left-11 top-1/2 -translate-y-1/2 flex items-center justify-center">
+                            <span className="w-6 py-0.5 text-[10px] font-bold text-white bg-[#722ED1] rounded shadow-sm text-center">
+                              {filter.logic}
+                            </span>
+                          </div>
+                        )}
+                        <div className="absolute -left-[26px] top-1/2 -translate-y-1/2 w-2 h-2 bg-white border border-[#D3ADFF] rounded-full z-10 flex items-center justify-center">
+                          <div className="w-[3px] h-[3px] bg-[#722ED1] rounded-full"></div>
+                        </div>
+                        <div className="flex-1 bg-white border border-[#DDD] rounded-lg px-4 py-2.5 text-sm text-[#333] flex items-center justify-between shadow-sm">
+                          <span className="font-medium text-[#444]">{filter.field}</span>
+                          <span className="text-[#666] text-xs px-2 py-0.5 bg-gray-50 rounded border border-[#EEE] mx-3">{filter.operator}</span>
+                          <span className="font-bold text-[#1890FF]">{filter.value}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-6 py-4 flex justify-end border-t border-[#EEE]">
+                <button 
+                  onClick={() => setShowAudienceModal(false)}
+                  className="px-6 py-2 bg-[#4A3AFF] text-white rounded-lg text-sm font-medium hover:bg-[#3D2EDD] transition-colors shadow-sm"
+                >
+                  我知道了
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
