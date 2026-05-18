@@ -773,6 +773,7 @@ function AgingView() {
   const [followUpTimes, setFollowUpTimes] = useState(1);
   const [selectedBehaviors, setSelectedBehaviors] = useState<string[]>(['call']);
   const [filters, setFilters] = useState([{ id: 1, field: '客户等级', operator: '等于', value: 'A类客户', logic: '且' }]);
+  const [filterLogicMode, setFilterLogicMode] = useState<'any' | 'all' | 'group'>('any');
   const [showTimeoutWarn, setShowTimeoutWarn] = useState(false);
   const [showAutoRemind, setShowAutoRemind] = useState(false);
   const [selectedRemindDays, setSelectedRemindDays] = useState<number[]>([3, 4]);
@@ -1122,42 +1123,30 @@ function AgingView() {
                       <h4 className="font-bold text-[#333]">筛选适用客群</h4>
                     </div>
 
-                    <div className="space-y-0 relative pl-10">
-                      {/* Vertical Line */}
-                      {filters.length > 1 && (
-                        <div className="absolute left-4 top-8 bottom-8 w-[1px] bg-[#D3ADFF]"></div>
-                      )}
+                    <div className="flex items-center space-x-6 py-2">
+                      {[
+                        { id: 'any', label: '满足任意一个标签' },
+                        { id: 'all', label: '同时满足所选标签' },
+                        { id: 'group', label: '满足所选标签“同组为或、异组为且”' }
+                      ].map(mode => (
+                        <label key={mode.id} className="flex items-center space-x-2 cursor-pointer group">
+                          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${filterLogicMode === mode.id ? 'border-[#4A3AFF]' : 'border-[#DDD] group-hover:border-[#4A3AFF]/50'}`}>
+                            {filterLogicMode === mode.id && <div className="w-2 h-2 rounded-full bg-[#4A3AFF]" />}
+                          </div>
+                          <span className={`text-sm ${filterLogicMode === mode.id ? 'text-[#333] font-medium' : 'text-[#666]'}`}>{mode.label}</span>
+                          <input type="radio" className="hidden" checked={filterLogicMode === mode.id} onChange={() => setFilterLogicMode(mode.id as any)} />
+                        </label>
+                      ))}
+                    </div>
 
+                    <div className="space-y-4">
                       {filters.map((filter, index) => (
-                        <div key={filter.id} className="relative py-4">
-                          {index > 0 && (
-                            <div className="absolute -left-10 top-0 -translate-y-1/2 flex items-center justify-center w-12 h-8 z-20">
-                              <div className="flex bg-white border border-[#722ED1] rounded-md overflow-hidden shadow-sm -translate-x-1">
-                                <button
-                                  onClick={() => updateFilterLogic(filter.id, '且')}
-                                  className={`w-6 py-1 text-[10px] font-bold transition-colors ${filter.logic === '且' ? 'bg-[#722ED1] text-white' : 'text-[#666] hover:bg-gray-50'}`}
-                                >
-                                  且
-                                </button>
-                                <button
-                                  onClick={() => updateFilterLogic(filter.id, '或')}
-                                  className={`w-6 py-1 text-[10px] font-bold transition-colors ${filter.logic === '或' ? 'bg-[#722ED1] text-white' : 'text-[#666] hover:bg-gray-50'}`}
-                                >
-                                  或
-                                </button>
-                              </div>
-                            </div>
-                          )}
-
+                        <div key={filter.id} className="relative">
                           <motion.div
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             className="flex items-center space-x-3"
                           >
-                            <div className="absolute -left-7 top-1/2 -translate-y-1/2 w-3 h-3 bg-white border border-[#D3ADFF] rounded-full z-10 flex items-center justify-center">
-                              <div className="w-1 h-1 bg-[#722ED1] rounded-full"></div>
-                            </div>
-
                             <select className="flex-1 border border-[#DDD] rounded-xl px-4 py-2.5 text-sm bg-white appearance-none focus:ring-2 focus:ring-[#4A3AFF]/20">
                               <option>{filter.field}</option>
                             </select>
