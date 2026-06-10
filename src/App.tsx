@@ -794,6 +794,9 @@ function AgingView() {
   const [showAudienceModal, setShowAudienceModal] = useState(false);
   const [showFollowUpModal, setShowFollowUpModal] = useState(false);
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [selectedCampus, setSelectedCampus] = useState('');
+  const [selectedChannel, setSelectedChannel] = useState('');
+  const [orderTypeTab, setOrderTypeTab] = useState('仅新单');
 
   useEffect(() => {
     const handleClickOutside = () => setOpenDropdownId(null);
@@ -1099,8 +1102,13 @@ function AgingView() {
                     </div>
                     <div className="flex items-center space-x-4">
                       <label className="text-sm font-medium text-[#666] w-20">适用校区</label>
-                      <select className="flex-1 border border-[#DDD] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A3AFF]/20">
-                        <option>北京广渠门校区</option>
+                      <select 
+                        value={selectedCampus}
+                        onChange={(e) => setSelectedCampus(e.target.value)}
+                        className="flex-1 border border-[#DDD] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A3AFF]/20"
+                      >
+                        <option value="">请选择校区</option>
+                        <option value="bj_gq">北京广渠门校区</option>
                       </select>
                     </div>
                   </div>
@@ -1108,76 +1116,100 @@ function AgingView() {
                   <div className="flex items-center space-x-4">
                     <label className="text-sm font-medium text-[#666] w-20">适用渠道</label>
                     <div className="flex-1 flex space-x-3">
-                      <select className="flex-1 border border-[#DDD] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A3AFF]/20"><option>线上营销</option></select>
+                      <select 
+                        value={selectedChannel}
+                        onChange={(e) => setSelectedChannel(e.target.value)}
+                        className="flex-1 border border-[#DDD] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A3AFF]/20"
+                      >
+                        <option value="">请选择渠道</option>
+                        <option value="online">线上营销</option>
+                      </select>
                       <select className="flex-1 border border-[#DDD] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A3AFF]/20"><option>网络新媒体</option></select>
                       <select className="flex-1 border border-[#DDD] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A3AFF]/20"><option>引流产品</option></select>
                     </div>
                   </div>
 
-                  {/* Filter Target Audience */}
-                  <div className="bg-[#F9FAFB] rounded-2xl p-6 border border-[#EEE] space-y-4">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <div className="p-2 bg-[#F0EEFF] text-[#722ED1] rounded-lg">
-                        <Tag size={18} />
-                      </div>
-                      <h4 className="font-bold text-[#333]">筛选适用客群</h4>
-                    </div>
-
-                    <div className="flex items-center space-x-6 py-2">
-                      {[
-                        { id: 'any', label: '满足任意一个标签' },
-                        { id: 'all', label: '同时满足所选标签' },
-                        { id: 'group', label: '满足所选标签“同组为或、异组为且”' }
-                      ].map(mode => (
-                        <label key={mode.id} className="flex items-center space-x-2 cursor-pointer group">
-                          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${filterLogicMode === mode.id ? 'border-[#4A3AFF]' : 'border-[#DDD] group-hover:border-[#4A3AFF]/50'}`}>
-                            {filterLogicMode === mode.id && <div className="w-2 h-2 rounded-full bg-[#4A3AFF]" />}
-                          </div>
-                          <span className={`text-sm ${filterLogicMode === mode.id ? 'text-[#333] font-medium' : 'text-[#666]'}`}>{mode.label}</span>
-                          <input type="radio" className="hidden" checked={filterLogicMode === mode.id} onChange={() => setFilterLogicMode(mode.id as any)} />
-                        </label>
-                      ))}
-                    </div>
-
-                    <div className="space-y-4">
-                      {filters.map((filter, index) => (
-                        <div key={filter.id} className="relative">
-                          <motion.div
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="flex items-center space-x-3"
-                          >
-                            <select className="flex-1 border border-[#DDD] rounded-xl px-4 py-2.5 text-sm bg-white appearance-none focus:ring-2 focus:ring-[#4A3AFF]/20">
-                              <option>{filter.field}</option>
-                            </select>
-                            <select className="w-32 border border-[#DDD] rounded-xl px-4 py-2.5 text-sm bg-white appearance-none focus:ring-2 focus:ring-[#4A3AFF]/20">
-                              <option>{filter.operator}</option>
-                              <option>不等于</option>
-                            </select>
-                            <select className="flex-1 border border-[#DDD] rounded-xl px-4 py-2.5 text-sm bg-white appearance-none focus:ring-2 focus:ring-[#4A3AFF]/20">
-                              <option>{filter.value}</option>
-                              <option>B类客户</option>
-                              <option>C类客户</option>
-                              <option>D类客户</option>
-                            </select>
-                            {filters.length > 1 && (
-                              <button onClick={() => removeFilter(filter.id)} className="text-[#FF4D4F] p-2 hover:bg-red-50 rounded-full transition-colors">
-                                <Trash2 size={18} />
-                              </button>
-                            )}
-                          </motion.div>
+                  {/* Read-only Recycle Rules Display */}
+                  <AnimatePresence>
+                    {selectedCampus && selectedChannel && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="bg-[#F5F7FA] rounded-2xl p-6 border border-[#E4E7ED] space-y-5 overflow-hidden"
+                      >
+                        {/* Order Type Tabs */}
+                        <div className="flex space-x-6 border-b border-[#E4E7ED] mb-2">
+                          {['仅新单', '仅老单'].map((tab) => (
+                            <button
+                              key={tab}
+                              onClick={() => setOrderTypeTab(tab)}
+                              className={`pb-3 text-sm font-medium transition-all relative ${orderTypeTab === tab ? 'text-[#4A3AFF]' : 'text-[#666] hover:text-[#333]'}`}
+                            >
+                              {tab}
+                              {orderTypeTab === tab && (
+                                <motion.div
+                                  layoutId="orderTypeTab"
+                                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#4A3AFF]"
+                                />
+                              )}
+                            </button>
+                          ))}
                         </div>
-                      ))}
-                    </div>
 
-                    <button
-                      onClick={addFilter}
-                      className="w-full py-3 border-2 border-dashed border-[#DDD] rounded-xl text-[#999] text-sm hover:border-[#4A3AFF] hover:text-[#4A3AFF] transition-all flex items-center justify-center space-x-2"
-                    >
-                      <Plus size={16} />
-                      <span>添加筛选条件</span>
-                    </button>
-                  </div>
+                        <div className="flex items-center space-x-2 mb-4">
+                          <div className="w-1 h-4 bg-[#1890FF] rounded-full"></div>
+                          <h4 className="font-bold text-[#333] text-sm">当前校区/渠道关联回收规则</h4>
+                          <span className="text-xs text-[#999] ml-2">（此为该校区/渠道下已配置的回收规则，不可在此修改）</span>
+                        </div>
+
+                        <div className="space-y-4">
+                          {/* Row 1: 渠道类型 */}
+                          <div className="flex items-center space-x-8 bg-white p-4 rounded-lg border border-[#EEE]">
+                            <div className="flex items-center space-x-3 flex-1">
+                              <span className="text-sm text-[#666] whitespace-nowrap font-medium">回收类型</span>
+                              <div className="flex space-x-2 flex-1">
+                                <select disabled className="flex-1 bg-gray-50 border border-[#DDD] rounded px-2 py-1.5 text-sm text-[#666] cursor-not-allowed appearance-none"><option>全部</option></select>
+                                <select disabled className="flex-1 bg-gray-50 border border-[#DDD] rounded px-2 py-1.5 text-sm text-[#666] cursor-not-allowed appearance-none"><option>线上营销</option></select>
+                                <select disabled className="flex-1 bg-gray-50 border border-[#DDD] rounded px-2 py-1.5 text-sm text-[#666] cursor-not-allowed appearance-none"><option>网络新媒体</option></select>
+                                <select disabled className="flex-1 bg-gray-50 border border-[#DDD] rounded px-2 py-1.5 text-sm text-[#666] cursor-not-allowed appearance-none"><option>引流产品</option></select>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Row 2: 回收目标池 & 回收条件 */}
+                          <div className="bg-white p-5 rounded-lg border border-[#EEE] space-y-5">
+                            <div className="flex items-center space-x-3">
+                              <span className="text-sm text-[#666] w-20 font-medium">回收目标池</span>
+                              <select disabled className="w-64 bg-gray-50 border border-[#DDD] rounded-lg px-3 py-2 text-sm text-[#666] cursor-not-allowed appearance-none">
+                                <option>当前校区商机公海池</option>
+                              </select>
+                            </div>
+                            
+                            <div className="flex items-start space-x-3">
+                              <span className="text-sm text-[#666] w-20 pt-2 font-medium">回收类型</span>
+                              <div className="space-y-3 flex-1">
+                                <div className="flex items-center space-x-2">
+                                  <select disabled className="w-36 bg-gray-50 border border-[#DDD] rounded-lg px-3 py-2 text-sm text-[#666] cursor-not-allowed appearance-none"><option>客户状态未推进</option></select>
+                                  <select disabled className="w-36 bg-gray-50 border border-[#DDD] rounded-lg px-3 py-2 text-sm text-[#666] cursor-not-allowed appearance-none"><option>已承诺未上门</option></select>
+                                  <select disabled className="w-20 bg-gray-50 border border-[#DDD] rounded-lg px-3 py-2 text-sm text-[#666] cursor-not-allowed appearance-none"><option>大于</option></select>
+                                  <input disabled type="text" value="7" className="w-16 bg-gray-50 border border-[#DDD] rounded-lg px-3 py-2 text-sm text-center text-[#666] cursor-not-allowed" />
+                                  <span className="text-sm text-[#666]">天</span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <div className="w-36"></div> {/* Empty space for alignment */}
+                                  <select disabled className="w-36 bg-gray-50 border border-[#DDD] rounded-lg px-3 py-2 text-sm text-[#666] cursor-not-allowed appearance-none"><option>已上门未关单</option></select>
+                                  <select disabled className="w-20 bg-gray-50 border border-[#DDD] rounded-lg px-3 py-2 text-sm text-[#666] cursor-not-allowed appearance-none"><option>大于</option></select>
+                                  <input disabled type="text" value="7" className="w-16 bg-gray-50 border border-[#DDD] rounded-lg px-3 py-2 text-sm text-center text-[#666] cursor-not-allowed" />
+                                  <span className="text-sm text-[#666]">天</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
                   {/* Phased Follow-up Deadline */}
                   <div className="bg-[#F9FAFB] rounded-2xl p-6 border border-[#EEE] space-y-6">
@@ -1300,121 +1332,7 @@ function AgingView() {
                       </div>
                     </div>
 
-                    {/* Applicable Time Periods */}
-                    <div className="space-y-4 pt-4 border-t border-[#EEE]">
-                      <h5 className="text-sm font-bold text-[#333]">适用时段</h5>
-                      <div className="border border-[#DDD] rounded overflow-hidden bg-white">
-                        <table className="w-full text-sm text-center">
-                          <thead className="bg-white text-[#333] border-b border-[#DDD]">
-                            <tr>
-                              <th className="py-2.5 px-4 font-normal border-r border-[#DDD] w-1/3">星期</th>
-                              <th className="py-2.5 px-4 font-normal border-r border-[#DDD]">时间段</th>
-                              <th className="py-2.5 px-4 font-normal w-24">操作</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-[#DDD]">
-                            {timePeriods.map((tp) => (
-                              <tr key={tp.id}>
-                                <td className="p-2.5 border-r border-[#DDD]">
-                                  <div className="relative inline-block w-4/5 text-left">
-                                    <div 
-                                      className="w-full border border-[#999] rounded px-3 py-1.5 focus:outline-none text-sm bg-white cursor-pointer flex justify-between items-center min-h-[34px]"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setOpenDropdownId(openDropdownId === tp.id ? null : tp.id);
-                                      }}
-                                    >
-                                      <span className="truncate pr-4">
-                                        {tp.days.length === 0 ? '请选择' : tp.days.join('、')}
-                                      </span>
-                                      <ChevronRight size={16} className={`text-[#333] pointer-events-none transition-transform ${openDropdownId === tp.id ? '-rotate-90' : 'rotate-90'}`} />
-                                    </div>
-                                    
-                                    <AnimatePresence>
-                                      {openDropdownId === tp.id && (
-                                        <motion.div 
-                                          initial={{ opacity: 0, y: -10 }}
-                                          animate={{ opacity: 1, y: 0 }}
-                                          exit={{ opacity: 0, y: -10 }}
-                                          className="absolute top-full left-0 mt-1 w-full bg-white border border-[#DDD] rounded shadow-lg z-50 py-1"
-                                          onClick={(e) => e.stopPropagation()}
-                                        >
-                                          {ALL_DAYS.map(day => (
-                                            <label key={day} className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer">
-                                              <input 
-                                                type="checkbox" 
-                                                checked={tp.days.includes(day)}
-                                                onChange={(e) => {
-                                                  const newDays = e.target.checked 
-                                                    ? [...tp.days, day] 
-                                                    : tp.days.filter(d => d !== day);
-                                                  
-                                                  newDays.sort((a, b) => ALL_DAYS.indexOf(a) - ALL_DAYS.indexOf(b));
-                                                  
-                                                  setTimePeriods(timePeriods.map(t => t.id === tp.id ? { ...t, days: newDays } : t));
-                                                }}
-                                                className="mr-2 rounded border-gray-300 text-[#4A3AFF] focus:ring-[#4A3AFF] cursor-pointer"
-                                              />
-                                              <span className="text-sm text-[#333]">{day}</span>
-                                            </label>
-                                          ))}
-                                        </motion.div>
-                                      )}
-                                    </AnimatePresence>
-                                  </div>
-                                </td>
-                                <td className="p-2.5 border-r border-[#DDD]">
-                                  <div className="flex items-center justify-center space-x-4">
-                                    <div className="relative">
-                                      <input 
-                                        type="text" 
-                                        value={tp.startTime}
-                                        onChange={(e) => {
-                                          setTimePeriods(timePeriods.map(t => t.id === tp.id ? { ...t, startTime: e.target.value } : t));
-                                        }}
-                                        className="w-[100px] border-b border-[#999] focus:border-[#4A3AFF] px-1 py-1 focus:outline-none text-center text-sm"
-                                      />
-                                      <Clock size={16} className="absolute right-0 top-1 text-[#666] pointer-events-none" />
-                                    </div>
-                                    <span className="text-[#666]">~</span>
-                                    <div className="relative">
-                                      <input 
-                                        type="text" 
-                                        value={tp.endTime}
-                                        onChange={(e) => {
-                                          setTimePeriods(timePeriods.map(t => t.id === tp.id ? { ...t, endTime: e.target.value } : t));
-                                        }}
-                                        className="w-[100px] border-b border-[#999] focus:border-[#4A3AFF] px-1 py-1 focus:outline-none text-center text-sm"
-                                      />
-                                      <Clock size={16} className="absolute right-0 top-1 text-[#666] pointer-events-none" />
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="p-2.5">
-                                  <button 
-                                    onClick={() => setTimePeriods(timePeriods.filter(t => t.id !== tp.id))}
-                                    className="text-[#FFB08F] hover:text-[#FF4D4F] transition-colors p-1"
-                                  >
-                                    <Trash2 size={18} />
-                                  </button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                      <button 
-                        onClick={() => {
-                          setTimePeriods([...timePeriods, { id: Date.now(), days: ['周一', '周二', '周三', '周四', '周五'], startTime: '09:00 AM', endTime: '06:00 PM' }]);
-                        }}
-                        className="text-[#722ED1] text-sm flex items-center space-x-1.5 hover:text-[#5B25A6] font-medium transition-colors"
-                      >
-                        <div className="border border-[#722ED1] rounded-sm bg-white w-[14px] h-[14px] flex items-center justify-center">
-                          <Plus size={10} strokeWidth={3} />
-                        </div>
-                        <span>添加适用时段</span>
-                      </button>
-                    </div>
+
                   </div>
 
                   {/* Reminders */}
