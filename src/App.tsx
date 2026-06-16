@@ -1380,64 +1380,7 @@ function AgingView() {
                       </AnimatePresence>
                     </div>
 
-                    <div className="w-full h-[1px] bg-[#EEE]"></div>
 
-                    {/* Timeout Warning */}
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-3">
-                        <input
-                          type="checkbox"
-                          id="timeout-warn"
-                          className="w-4 h-4 text-[#1890FF] rounded border-gray-300 cursor-pointer"
-                          checked={showTimeoutWarn}
-                          onChange={(e) => setShowTimeoutWarn(e.target.checked)}
-                        />
-                        <label htmlFor="timeout-warn" className="text-sm font-bold text-[#333] cursor-pointer">超时预警</label>
-                      </div>
-
-                      <AnimatePresence>
-                        {showTimeoutWarn && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="pl-7 space-y-4 overflow-hidden"
-                          >
-                            <div className="flex items-center space-x-3">
-                              <div className="flex items-center border border-[#DDD] rounded-lg overflow-hidden">
-                                <input
-                                  type="text"
-                                  placeholder="请输入"
-                                  className="px-4 py-2 text-sm w-20 focus:outline-none"
-                                  value={reminderValue || ''}
-                                  onChange={(e) => setReminderValue(Number(e.target.value))}
-                                />
-                                <select
-                                  className="bg-gray-50 border-l border-[#DDD] text-xs text-[#666] px-2 py-2 focus:outline-none"
-                                  value={reminderUnit}
-                                  onChange={(e) => setReminderUnit(e.target.value)}
-                                >
-                                  <option>小时前</option>
-                                  <option>分钟前</option>
-                                  <option>天前</option>
-                                </select>
-                              </div>
-                              <span className="text-sm text-[#666]">无跟进触发预警提醒</span>
-                            </div>
-
-                            {validationError && (
-                              <motion.p
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="text-xs text-[#FF4D4F] font-medium flex items-center space-x-1"
-                              >
-                                <span>⚠️ {validationError}</span>
-                              </motion.p>
-                            )}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
                   </div>
 
                     <div className="flex justify-end space-x-4 pt-4">
