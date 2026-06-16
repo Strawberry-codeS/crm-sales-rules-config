@@ -1254,33 +1254,7 @@ function AgingView() {
                         </p>
                       )}
 
-                      {/* Integrated Behavior Selection */}
-                      <div className="space-y-2">
-                        <label className="text-xs font-bold text-[#999] uppercase tracking-widest">跟进行为定义 (多选)</label>
-                        <div className="grid grid-cols-2 gap-3">
-                          {behaviors.map((b) => (
-                            <div
-                              key={b.id}
-                              onClick={() => toggleBehavior(b.id)}
-                              className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${selectedBehaviors.includes(b.id)
-                                ? 'bg-[#F0EEFF] border-[#722ED1] shadow-sm'
-                                : 'bg-white border-[#DDD] hover:border-[#722ED1]/50'
-                                }`}
-                            >
-                              <div className="flex items-center space-x-2">
-                                <b.icon size={16} className={selectedBehaviors.includes(b.id) ? 'text-[#722ED1]' : 'text-[#999]'} />
-                                <span className={`text-xs font-medium ${selectedBehaviors.includes(b.id) ? 'text-[#722ED1]' : 'text-[#666]'}`}>
-                                  {b.label}
-                                </span>
-                              </div>
-                              <div className={`w-4 h-4 rounded border flex items-center justify-center ${selectedBehaviors.includes(b.id) ? 'bg-[#722ED1] border-[#722ED1]' : 'border-[#DDD]'
-                                }`}>
-                                {selectedBehaviors.includes(b.id) && <CheckCircle2 size={10} className="text-white" />}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+
                     </div>
 
                     {/* Follow-up Time Limit Detail - Dynamic */}
