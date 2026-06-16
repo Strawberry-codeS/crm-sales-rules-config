@@ -1226,17 +1226,6 @@ function AgingView() {
                     <div className="space-y-4">
                       <div className="flex items-center space-x-4 bg-white p-4 rounded-xl border border-[#DDD]">
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm text-[#666]">跟进周期</span>
-                          <input
-                            type="number"
-                            value={followUpCycle}
-                            onChange={(e) => setFollowUpCycle(Number(e.target.value))}
-                            className="w-16 border border-[#DDD] rounded-lg px-2 py-1 text-center text-sm font-bold focus:ring-2 focus:ring-[#4A3AFF]/20"
-                          />
-                          <span className="text-sm text-[#666]">天内</span>
-                        </div>
-                        <div className="w-[1px] h-6 bg-[#EEE]"></div>
-                        <div className="flex items-center space-x-2">
                           <span className="text-sm text-[#666]">最少跟进</span>
                           <input
                             type="number"
@@ -1247,12 +1236,6 @@ function AgingView() {
                           <span className="text-sm text-[#666]">次</span>
                         </div>
                       </div>
-
-                      {followUpCycle > recyclingDays && (
-                        <p className="text-[10px] text-[#FF4D4F] font-bold flex items-center space-x-1">
-                          <span>⚠️ 跟进周期不能大于客群回收天数</span>
-                        </p>
-                      )}
 
                       {/* Integrated Behavior Selection */}
                       <div className="space-y-2">
