@@ -17,6 +17,7 @@ import {
   Plus,
   Download,
   ArrowLeft,
+  Filter,
   Clock,
   Tag,
   Trash2,
@@ -793,10 +794,19 @@ function AgingView() {
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
   const [showAudienceModal, setShowAudienceModal] = useState(false);
   const [showFollowUpModal, setShowFollowUpModal] = useState(false);
+  const [showRecycleRulesModal, setShowRecycleRulesModal] = useState(false);
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [selectedBranch, setSelectedBranch] = useState('');
   const [selectedCampus, setSelectedCampus] = useState('');
   const [selectedChannel, setSelectedChannel] = useState('');
-  const [orderTypeTab, setOrderTypeTab] = useState('仅新单');
+  const [orderTypeTab, setOrderTypeTab] = useState('全部');
+  const [filterOrderType, setFilterOrderType] = useState('全部');
+  const [filterChannel1, setFilterChannel1] = useState('全部');
+  const [filterChannel2, setFilterChannel2] = useState('全部');
+  const [filterChannel3, setFilterChannel3] = useState('全部');
+  const [showRecycleFilter, setShowRecycleFilter] = useState(false);
+  const [filterBranch, setFilterBranch] = useState('北京分公司');
+  const [filterCampus, setFilterCampus] = useState('全部');
 
   useEffect(() => {
     const handleClickOutside = () => setOpenDropdownId(null);
@@ -1096,8 +1106,16 @@ function AgingView() {
                   <div className="grid grid-cols-2 gap-6">
                     <div className="flex items-center space-x-4">
                       <label className="text-sm font-medium text-[#666] w-20">适用分公司</label>
-                      <select className="flex-1 border border-[#DDD] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A3AFF]/20">
-                        <option>北京分公司</option>
+                      <select 
+                        value={selectedBranch}
+                        onChange={(e) => setSelectedBranch(e.target.value)}
+                        className="flex-1 border border-[#DDD] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A3AFF]/20"
+                      >
+                        <option value="">请选择分公司</option>
+                        <option value="总部">总部</option>
+                        <option value="全部直营">全部直营</option>
+                        <option value="全部合作">全部合作</option>
+                        <option value="北京分公司">北京分公司</option>
                       </select>
                     </div>
                     <div className="flex items-center space-x-4">
@@ -1122,91 +1140,35 @@ function AgingView() {
                         className="flex-1 border border-[#DDD] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A3AFF]/20"
                       >
                         <option value="">请选择渠道</option>
+                        <option value="all">全部渠道</option>
                         <option value="online">线上营销</option>
                       </select>
-                      <select className="flex-1 border border-[#DDD] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A3AFF]/20"><option>网络新媒体</option></select>
-                      <select className="flex-1 border border-[#DDD] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A3AFF]/20"><option>引流产品</option></select>
+                      <select className="flex-1 border border-[#DDD] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A3AFF]/20">
+                        <option>网络新媒体</option>
+                      </select>
+                      <select className="flex-1 border border-[#DDD] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A3AFF]/20">
+                        <option>引流产品</option>
+                      </select>
                     </div>
                   </div>
 
-                  {/* Read-only Recycle Rules Display */}
+                  {/* Recycle Rules Button */}
                   <AnimatePresence>
-                    {selectedCampus && selectedChannel && (
+                    {selectedBranch && selectedChannel && (
                       <motion.div 
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="bg-[#F5F7FA] rounded-2xl p-6 border border-[#E4E7ED] space-y-5 overflow-hidden"
+                        className="flex items-center space-x-4 overflow-hidden pt-2"
                       >
-                        {/* Order Type Tabs */}
-                        <div className="flex space-x-6 border-b border-[#E4E7ED] mb-2">
-                          {['仅新单', '仅老单'].map((tab) => (
-                            <button
-                              key={tab}
-                              onClick={() => setOrderTypeTab(tab)}
-                              className={`pb-3 text-sm font-medium transition-all relative ${orderTypeTab === tab ? 'text-[#4A3AFF]' : 'text-[#666] hover:text-[#333]'}`}
-                            >
-                              {tab}
-                              {orderTypeTab === tab && (
-                                <motion.div
-                                  layoutId="orderTypeTab"
-                                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#4A3AFF]"
-                                />
-                              )}
-                            </button>
-                          ))}
-                        </div>
-
-                        <div className="flex items-center space-x-2 mb-4">
-                          <div className="w-1 h-4 bg-[#1890FF] rounded-full"></div>
-                          <h4 className="font-bold text-[#333] text-sm">当前校区/渠道关联回收规则</h4>
-                          <span className="text-xs text-[#999] ml-2">（此为该校区/渠道下已配置的回收规则，不可在此修改）</span>
-                        </div>
-
-                        <div className="space-y-4">
-                          {/* Row 1: 渠道类型 */}
-                          <div className="flex items-center space-x-8 bg-white p-4 rounded-lg border border-[#EEE]">
-                            <div className="flex items-center space-x-3 flex-1">
-                              <span className="text-sm text-[#666] whitespace-nowrap font-medium">回收类型</span>
-                              <div className="flex space-x-2 flex-1">
-                                <select disabled className="flex-1 bg-gray-50 border border-[#DDD] rounded px-2 py-1.5 text-sm text-[#666] cursor-not-allowed appearance-none"><option>全部</option></select>
-                                <select disabled className="flex-1 bg-gray-50 border border-[#DDD] rounded px-2 py-1.5 text-sm text-[#666] cursor-not-allowed appearance-none"><option>线上营销</option></select>
-                                <select disabled className="flex-1 bg-gray-50 border border-[#DDD] rounded px-2 py-1.5 text-sm text-[#666] cursor-not-allowed appearance-none"><option>网络新媒体</option></select>
-                                <select disabled className="flex-1 bg-gray-50 border border-[#DDD] rounded px-2 py-1.5 text-sm text-[#666] cursor-not-allowed appearance-none"><option>引流产品</option></select>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Row 2: 回收目标池 & 回收条件 */}
-                          <div className="bg-white p-5 rounded-lg border border-[#EEE] space-y-5">
-                            <div className="flex items-center space-x-3">
-                              <span className="text-sm text-[#666] w-20 font-medium">回收目标池</span>
-                              <select disabled className="w-64 bg-gray-50 border border-[#DDD] rounded-lg px-3 py-2 text-sm text-[#666] cursor-not-allowed appearance-none">
-                                <option>当前校区商机公海池</option>
-                              </select>
-                            </div>
-                            
-                            <div className="flex items-start space-x-3">
-                              <span className="text-sm text-[#666] w-20 pt-2 font-medium">回收类型</span>
-                              <div className="space-y-3 flex-1">
-                                <div className="flex items-center space-x-2">
-                                  <select disabled className="w-36 bg-gray-50 border border-[#DDD] rounded-lg px-3 py-2 text-sm text-[#666] cursor-not-allowed appearance-none"><option>客户状态未推进</option></select>
-                                  <select disabled className="w-36 bg-gray-50 border border-[#DDD] rounded-lg px-3 py-2 text-sm text-[#666] cursor-not-allowed appearance-none"><option>已承诺未上门</option></select>
-                                  <select disabled className="w-20 bg-gray-50 border border-[#DDD] rounded-lg px-3 py-2 text-sm text-[#666] cursor-not-allowed appearance-none"><option>大于</option></select>
-                                  <input disabled type="text" value="7" className="w-16 bg-gray-50 border border-[#DDD] rounded-lg px-3 py-2 text-sm text-center text-[#666] cursor-not-allowed" />
-                                  <span className="text-sm text-[#666]">天</span>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <div className="w-36"></div> {/* Empty space for alignment */}
-                                  <select disabled className="w-36 bg-gray-50 border border-[#DDD] rounded-lg px-3 py-2 text-sm text-[#666] cursor-not-allowed appearance-none"><option>已上门未关单</option></select>
-                                  <select disabled className="w-20 bg-gray-50 border border-[#DDD] rounded-lg px-3 py-2 text-sm text-[#666] cursor-not-allowed appearance-none"><option>大于</option></select>
-                                  <input disabled type="text" value="7" className="w-16 bg-gray-50 border border-[#DDD] rounded-lg px-3 py-2 text-sm text-center text-[#666] cursor-not-allowed" />
-                                  <span className="text-sm text-[#666]">天</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                        <label className="text-sm font-medium text-[#666] w-20">回收时间</label>
+                        <button 
+                          onClick={() => setShowRecycleRulesModal(true)}
+                          className="flex-1 bg-[#F9FAFB] border border-[#DDD] rounded-lg px-4 py-3 text-sm text-[#666] text-left hover:border-[#4A3AFF] hover:text-[#4A3AFF] transition-colors flex justify-between items-center"
+                        >
+                          <span>点击查看当前分公司/渠道关联回收规则</span>
+                          <ChevronRight size={16} />
+                        </button>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -1545,6 +1507,245 @@ function AgingView() {
                 >
                   我知道了
                 </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Recycle Rules Modal */}
+      <AnimatePresence>
+        {showRecycleRulesModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-4">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              <div className="p-6 border-b border-[#EEE] flex justify-between items-center bg-white z-10">
+                <h3 className="text-lg font-bold text-[#333]">回收时间规则详情</h3>
+                <button onClick={() => setShowRecycleRulesModal(false)} className="text-[#999] hover:text-[#333]">
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <div className="p-6 bg-[#F5F7FA] flex-1 overflow-y-auto">
+                <div className="bg-white rounded-xl shadow-sm border border-[#EEE] overflow-hidden">
+                  <div className="p-6 space-y-5">
+                    <div className="flex items-center justify-between mb-4 pb-2 border-b border-[#E4E7ED]">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-1 h-4 bg-[#1890FF] rounded-full"></div>
+                        <h4 className="font-bold text-[#333] text-sm">当前校区/渠道关联回收规则</h4>
+                        <span className="text-xs text-[#999] ml-2">（此为该校区/渠道下已配置的回收规则，不可在此修改）</span>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3 relative">
+                        <button 
+                          onClick={() => setShowRecycleFilter(!showRecycleFilter)}
+                          className={`flex items-center space-x-1 px-3 py-1.5 border rounded-lg text-sm transition-colors shadow-sm ${showRecycleFilter ? 'bg-[#4A3AFF] text-white border-[#4A3AFF]' : 'bg-white border-[#DDD] text-[#333] hover:bg-gray-50'}`}
+                        >
+                          <Filter size={14} />
+                          <span>筛选</span>
+                        </button>
+                        
+                        {/* Filter Panel */}
+                        <AnimatePresence>
+                          {showRecycleFilter && (
+                            <motion.div 
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: 10 }}
+                              className="absolute top-full right-0 mt-2 w-[480px] bg-white rounded-xl shadow-xl border border-[#EEE] z-50 p-5 space-y-4"
+                            >
+                               {/* Row 1: 单类型 */}
+                               <div className="flex items-center space-x-3">
+                                 <span className="text-sm font-medium text-[#666] w-16 text-right shrink-0">单类型</span>
+                                 <select 
+                                  value={filterOrderType}
+                                  onChange={e => setFilterOrderType(e.target.value)}
+                                  className="flex-1 border border-[#DDD] rounded-lg px-3 py-1.5 text-sm outline-none focus:border-[#4A3AFF] bg-white"
+                                 >
+                                   <option value="全部">全部单类型</option>
+                                   <option value="新单">仅新单</option>
+                                   <option value="老单">仅老单</option>
+                                 </select>
+                               </div>
+
+                               {/* Row 2: 分公司和校区 */}
+                               <div className="flex items-center space-x-3">
+                                 <span className="text-sm font-medium text-[#666] w-16 text-right shrink-0">适用范围</span>
+                                 <div className="flex-1 flex space-x-2">
+                                   <select 
+                                    disabled
+                                    value={filterBranch}
+                                    className="flex-1 bg-gray-50 border border-[#DDD] rounded-lg px-2 py-1.5 text-sm text-[#999] cursor-not-allowed appearance-none"
+                                   >
+                                     <option value="北京分公司">北京分公司</option>
+                                   </select>
+                                   <select 
+                                    value={filterCampus}
+                                    onChange={e => setFilterCampus(e.target.value)}
+                                    className="flex-1 border border-[#DDD] rounded-lg px-2 py-1.5 text-sm outline-none focus:border-[#4A3AFF] bg-white"
+                                   >
+                                     <option value="全部">全部校区</option>
+                                     <option value="北京广渠门校区">北京广渠门校区</option>
+                                     <option value="北京望京校区">北京望京校区</option>
+                                   </select>
+                                 </div>
+                               </div>
+
+                               {/* Row 3: 渠道 */}
+                               <div className="flex items-center space-x-3">
+                                 <span className="text-sm font-medium text-[#666] w-16 text-right shrink-0">渠道分类</span>
+                                 <div className="flex-1 flex space-x-2">
+                                   <select 
+                                    disabled
+                                    value={filterChannel1}
+                                    className="flex-1 bg-gray-50 border border-[#DDD] rounded-lg px-2 py-1.5 text-xs text-[#999] cursor-not-allowed appearance-none"
+                                   >
+                                     <option value="全部">一级渠道</option>
+                                     <option value="线上营销">线上营销</option>
+                                     <option value="线下地推">线下地推</option>
+                                   </select>
+                                   <select 
+                                    value={filterChannel2}
+                                    onChange={e => { setFilterChannel2(e.target.value); setFilterChannel3('全部'); }}
+                                    className="flex-1 border border-[#DDD] rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#4A3AFF] bg-white"
+                                   >
+                                     <option value="全部">全部二级</option>
+                                     <option value="网络新媒体">网络新媒体</option>
+                                     <option value="电商平台">电商平台</option>
+                                     <option value="社区推广">社区推广</option>
+                                   </select>
+                                   <select 
+                                    value={filterChannel3}
+                                    onChange={e => setFilterChannel3(e.target.value)}
+                                    className="flex-1 border border-[#DDD] rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#4A3AFF] bg-white"
+                                   >
+                                     <option value="全部">全部三级</option>
+                                     <option value="引流产品">引流产品</option>
+                                     <option value="体验课">体验课</option>
+                                     <option value="常规拉新">常规拉新</option>
+                                   </select>
+                                 </div>
+                               </div>
+
+                               <div className="pt-2 flex justify-end">
+                                 <button 
+                                   onClick={() => setShowRecycleFilter(false)}
+                                   className="px-4 py-1.5 bg-[#4A3AFF] text-white text-sm rounded-lg hover:bg-[#3D2EDD] transition-colors"
+                                 >
+                                   确认
+                                 </button>
+                               </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </div>
+
+                    <div className="border border-[#EEE] rounded-lg overflow-hidden">
+                      <table className="w-full text-xs text-left">
+                        <thead className="bg-[#F9FAFB] text-[#666] font-bold border-b border-[#EEE]">
+                          <tr>
+                            <th className="px-4 py-3 whitespace-nowrap">渠道分类</th>
+                            <th className="px-4 py-3 whitespace-nowrap">适用分公司</th>
+                            <th className="px-4 py-3 whitespace-nowrap">适用校区</th>
+                            <th className="px-4 py-3 whitespace-nowrap">单类型</th>
+                            <th className="px-4 py-3 whitespace-nowrap">回收目标池</th>
+                            <th className="px-4 py-3">回收触发条件</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#EEE] bg-white">
+                          {[
+                            {
+                              channel: '线上营销 / 网络新媒体 / 引流产品',
+                              branch: '北京分公司',
+                              campus: '北京广渠门校区',
+                              type: '新单',
+                              pool: '当前校区商机公海池',
+                              conditions: ['客户状态未推进 > 7天', '已承诺未上门 > 7天', '已上门未关单 > 7天']
+                            },
+                            {
+                              channel: '线上营销 / 网络新媒体 / 引流产品',
+                              branch: '北京分公司',
+                              campus: '北京广渠门校区',
+                              type: '老单',
+                              pool: '当前校区商机公海池',
+                              conditions: ['客户状态未推进 > 15天']
+                            },
+                            {
+                              channel: '线上营销 / 电商平台 / 体验课',
+                              branch: '北京分公司',
+                              campus: '北京广渠门校区',
+                              type: '新单',
+                              pool: '当前校区商机公海池',
+                              conditions: ['客户状态未推进 > 5天', '已承诺未上门 > 5天']
+                            },
+                            {
+                              channel: '线下地推 / 社区推广 / 常规拉新',
+                              branch: '北京分公司',
+                              campus: '北京望京校区',
+                              type: '新单',
+                              pool: '当前校区商机公海池',
+                              conditions: ['客户状态未推进 > 3天']
+                            }
+                          ].filter(row => {
+                            if (filterOrderType !== '全部' && row.type !== filterOrderType) return false;
+                            if (filterBranch !== '全部' && row.branch !== filterBranch) return false;
+                            if (filterCampus !== '全部' && row.campus !== filterCampus) return false;
+                            
+                            const channels = row.channel.split(' / ');
+                            const c1 = channels[0] || '';
+                            const c2 = channels[1] || '';
+                            const c3 = channels[2] || '';
+
+                            if (filterChannel1 !== '全部' && c1 !== filterChannel1) return false;
+                            if (filterChannel2 !== '全部' && c2 !== filterChannel2) return false;
+                            if (filterChannel3 !== '全部' && c3 !== filterChannel3) return false;
+
+                            return true;
+                          }).map((row, i) => (
+                            <tr key={i} className="hover:bg-gray-50 transition-colors">
+                              <td className="px-4 py-3 text-[#333] font-medium whitespace-nowrap">{row.channel}</td>
+                              <td className="px-4 py-3 text-[#666] whitespace-nowrap">{row.branch}</td>
+                              <td className="px-4 py-3 text-[#666] whitespace-nowrap">{row.campus}</td>
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                <span className={`px-2 py-1 text-[11px] rounded border ${row.type === '新单' ? 'bg-[#E6F7FF] text-[#1890FF] border-[#91D5FF]' : 'bg-[#FFF2E8] text-[#FA541C] border-[#FFBB96]'}`}>
+                                  {row.type}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-[#666] whitespace-nowrap">{row.pool}</td>
+                              <td className="px-4 py-3">
+                                <div className="flex flex-wrap gap-1.5">
+                                  {row.conditions.map((cond, j) => (
+                                    <span key={j} className="inline-block bg-[#F0EEFF] text-[#722ED1] text-[11px] px-1.5 py-0.5 rounded border border-[#D3ADFF] whitespace-nowrap">
+                                      {cond}
+                                    </span>
+                                  ))}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  
+                  {/* Pagination */}
+                  <div className="px-6 py-4 bg-gray-50 border-t border-[#EEE] flex justify-end items-center space-x-3 text-sm text-[#666]">
+                    <span>共 1 条</span>
+                    <select className="border border-[#DDD] rounded px-2 py-1 bg-white outline-none">
+                      <option>10 条/页</option>
+                    </select>
+                    <div className="flex space-x-1">
+                      <button className="px-2 py-1 border border-[#DDD] rounded bg-white text-[#CCC] cursor-not-allowed">&lt;</button>
+                      <button className="px-2 py-1 border border-[#4A3AFF] rounded bg-[#4A3AFF] text-white">1</button>
+                      <button className="px-2 py-1 border border-[#DDD] rounded bg-white text-[#CCC] cursor-not-allowed">&gt;</button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </motion.div>
           </div>
